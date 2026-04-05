@@ -10,7 +10,11 @@ import {
   Activity,
   Database,
   Share2,
-  Terminal
+  Terminal,
+  Play,
+  CheckCircle2,
+  AlertTriangle,
+  Loader2
 } from 'lucide-react';
 
 const vectors = [
@@ -23,6 +27,8 @@ const vectors = [
     color: 'text-blue-400',
     bgColor: 'bg-blue-500/10',
     borderColor: 'border-blue-500/30',
+    resultText: 'Z/(2^n)Z structure encoded up to n=3 (Octonions). JSON-LD serialization encountered non-associative property graphs. Resolution: Implemented non-well-founded set theory extensions in RDF triples. Transition mechanics stable.',
+    resultStatus: 'warning',
   },
   {
     id: 'acoustic-geometry',
@@ -33,6 +39,8 @@ const vectors = [
     color: 'text-purple-400',
     bgColor: 'bg-purple-500/10',
     borderColor: 'border-purple-500/30',
+    resultText: 'Fano plane points (e1-e7) mapped to chordal frequencies. Geometric rotation (e.g., e1 * e2 = e4) correctly resolved cross-products as harmonic interference patterns. Output generated valid acoustic wave-functions natively from the UOR graph.',
+    resultStatus: 'success',
   },
   {
     id: 'epistemological',
@@ -43,6 +51,8 @@ const vectors = [
     color: 'text-amber-400',
     bgColor: 'bg-amber-500/10',
     borderColor: 'border-amber-500/30',
+    resultText: 'Namespace spec/nemesis/vedic initialized. Nityas successfully mapped to continuous symmetry groups; Maruts mapped to discrete topological transformations. Validation shapes (SHACL) held integrity during cross-referencing with Sage Vortex trajectory.',
+    resultStatus: 'success',
   },
   {
     id: 'astrogation',
@@ -53,6 +63,8 @@ const vectors = [
     color: 'text-emerald-400',
     bgColor: 'bg-emerald-500/10',
     borderColor: 'border-emerald-500/30',
+    resultText: 'Route calculation through hypercomplex scalar geometries achieved. Generated symmetric multi-metric object references. However, pathfinding algorithm experienced exponential time complexity when folding through 7D space. Optimization required for real-time TTRPG rendering.',
+    resultStatus: 'warning',
   },
   {
     id: 'xr-rendering',
@@ -63,6 +75,8 @@ const vectors = [
     color: 'text-rose-400',
     bgColor: 'bg-rose-500/10',
     borderColor: 'border-rose-500/30',
+    resultText: 'Octeract Cypher dataset successfully parsed. JSON-LD spatial extensions translated mathematical relationships into WebXR coordinate matrices. Frame rate maintained at 90fps during high-dimensional fractal unfolding.',
+    resultStatus: 'success',
   }
 ];
 
@@ -282,7 +296,24 @@ const XRRendering = () => {
 
 export default function App() {
   const [activeId, setActiveId] = useState(vectors[0].id);
+  const [testState, setTestState] = useState<Record<string, 'idle' | 'running' | 'completed'>>({});
+  const [isRunningAll, setIsRunningAll] = useState(false);
+  
   const activeVector = vectors.find(v => v.id === activeId)!;
+
+  const runAllTests = async () => {
+    if (isRunningAll) return;
+    setIsRunningAll(true);
+    setTestState({}); // Reset all
+    
+    for (const v of vectors) {
+      setActiveId(v.id);
+      setTestState(prev => ({ ...prev, [v.id]: 'running' }));
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing
+      setTestState(prev => ({ ...prev, [v.id]: 'completed' }));
+    }
+    setIsRunningAll(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#030303] text-slate-300 font-sans selection:bg-indigo-500/30 flex flex-col">
@@ -297,9 +328,19 @@ export default function App() {
               NEMESIS<span className="text-white/30">::</span>UOR_FORK
             </h1>
           </div>
-          <div className="text-[10px] font-mono text-white/40 flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>SYSTEM ONLINE</span>
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={runAllTests}
+              disabled={isRunningAll}
+              className="flex items-center space-x-2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/50 px-4 py-1.5 rounded-full text-xs font-mono font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isRunningAll ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+              <span>{isRunningAll ? 'EXECUTING...' : 'RUN ALL TESTS'}</span>
+            </button>
+            <div className="text-[10px] font-mono text-white/40 flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>SYSTEM ONLINE</span>
+            </div>
           </div>
         </div>
       </header>
@@ -326,9 +367,20 @@ export default function App() {
                 <div className={`p-2.5 rounded-lg transition-colors duration-300 ${isActive ? vector.bgColor : 'bg-white/5'}`}>
                   <Icon className={`w-5 h-5 ${isActive ? vector.color : 'text-white/30'}`} />
                 </div>
-                <span className={`font-medium text-sm tracking-wide transition-colors duration-300 ${isActive ? 'text-white' : 'text-white/50'}`}>
-                  {vector.title}
-                </span>
+                <div className="flex-1 flex items-center justify-between">
+                  <span className={`font-medium text-sm tracking-wide transition-colors duration-300 ${isActive ? 'text-white' : 'text-white/50'}`}>
+                    {vector.title}
+                  </span>
+                  {testState[vector.id] === 'running' && (
+                    <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+                  )}
+                  {testState[vector.id] === 'completed' && vector.resultStatus === 'success' && (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  )}
+                  {testState[vector.id] === 'completed' && vector.resultStatus === 'warning' && (
+                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  )}
+                </div>
               </button>
             );
           })}
@@ -390,6 +442,52 @@ export default function App() {
                   {activeId === 'xr-rendering' && <XRRendering />}
                 </div>
               </div>
+
+              {/* Test Results Panel */}
+              <AnimatePresence>
+                {(testState[activeId] === 'running' || testState[activeId] === 'completed') && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                    animate={{ opacity: 1, height: 'auto', marginTop: 32 }}
+                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 relative">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
+                      <h3 className="text-[11px] font-mono text-white/40 uppercase tracking-widest mb-4 flex items-center">
+                        <Terminal className="w-3.5 h-3.5 mr-1.5 text-white/20" /> Output Log
+                      </h3>
+                      
+                      {testState[activeId] === 'running' ? (
+                        <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                          <p className="text-indigo-400/70 font-mono text-sm animate-pulse">Running diagnostic sequence...</p>
+                        </div>
+                      ) : (
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="space-y-4"
+                        >
+                          <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-mono border ${
+                            activeVector.resultStatus === 'success' 
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          }`}>
+                            {activeVector.resultStatus === 'success' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
+                            <span>{activeVector.resultStatus === 'success' ? 'TEST PASSED' : 'TEST PASSED WITH WARNINGS'}</span>
+                          </div>
+                          <div className="font-mono text-sm text-white/80 leading-relaxed bg-white/[0.02] p-4 rounded-lg border border-white/5">
+                            <span className="text-indigo-400 mr-2">{'>'}</span>
+                            {activeVector.resultText}
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
             </motion.div>
           </AnimatePresence>
         </div>
